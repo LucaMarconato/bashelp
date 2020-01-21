@@ -3,7 +3,7 @@ bashelp
 "A tool for bookmarking and tagging your favourite (and impossible to remember) shell commands", forked from [dario2994](https://github.com/dario2994/bashelp).
 
 This fork
-========
+======
 
 New features brought by this fork:
 
