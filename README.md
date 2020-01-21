@@ -1,19 +1,18 @@
 bashelp
 =======
+A tool for bookmarking and tagging your favourite (and impossible to remember) shell commands (forked from [dario2994](https://github.com/dario2994/bashelp))
 
-A tool for bookmarking and tagging your favourite (and impossible to remember) shell commands
+This fork
+========
 
-Dependencies and Requirements
-==============================
-To install and run **bashelp** you need to have installed:
-* nano 
-* python3 (>=3.2)
-* sqlite3 (>=3.6.19)
+New features brought by this fork:
 
-The docs for bashelp are written in Markdown and translated in the unix man language using pandoc. 
-Pandoc is NOT a dependency as the manpage is already built and does not have to be built during the installation.
+- you can save commands spanning multiple lines (like code snippets);
+- the retrieved commands are automatically copied into the clipboard;
+- improved way in which commands are presented and selected by the user upon search.
 
-It has been tested both on **bash** and **zsh** on the following linux distros: *Ubuntu*, *Debian*, *Fedora*, *Arch*, *Gentoo*.
+30 seconds demo:
+[![30 seconds video showing a demo of bashelp](https://img.youtube.com/vi/CbDKKno5-p8/0.jpg)](https://www.youtube.com/watch?v=CbDKKno5-p8)
 
 Installation
 ============
@@ -29,14 +28,19 @@ With
 ```bash
 bashelp -a
 ```
-you can interactively add a command to your shelf,
+you can interactively **a**dd a command to your shelf,
 then get it with
 ```bash
-bashelp CommandTag
+bashelp <command_tag>
 ```
-and in the end you remove the command with
+If you need to **m**odify a command, use
 ```bash
-bashelp --remove CommandId
+bashelp -m <command_id>
+```
+(the command id is shown by `bashelp <command_tag>`).
+You can also **r**emove commands with
+```bash
+bashelp -r <command_id>
 ```
 
 For further information you may use 

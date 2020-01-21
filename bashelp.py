@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import click
 import os
-import pyperclip
+import re
 import shutil
 import sqlite3
 import subprocess
 import sys
 import textwrap
+
+import click
+import pyperclip
 
 PROGRAM_NAME = 'bashelp'
 PROGRAM_VERSION = '1.0'
@@ -65,7 +67,7 @@ def DatabaseCommandSimilarity(
 
 
 ISTTY = sys.stdout.isatty()
-COLOR_BLUE = '\033[94m' if ISTTY else ''
+COLOR_BLUE = '\033[36m' if ISTTY else ''
 COLOR_GREEN = '\033[92m' if ISTTY else ''
 COLOR_RED = '\033[91m' if ISTTY else ''
 COLOR_YELLOW = '\033[33m' if ISTTY else ''
@@ -80,6 +82,8 @@ def ColorPrint(string, mainColor='default', prefix='', suffix='', backgroundColo
 
 def PrintCommand(commandId, command, description='', tags=[], ShowTags=False):
     ColorPrint(str(commandId), 'red', '', ': ', backgroundColor='default', end='')
+    if command.count('\n') > 0:
+        print('')
     ColorPrint(str(command), 'yellow')
     descriptionPrefix = '\t'
     descriptionWrapper = textwrap.TextWrapper(initial_indent=descriptionPrefix, subsequent_indent=' ' * (
@@ -139,16 +143,20 @@ def CheckSimilarity(command, description):
         return False
 
 
-COMMAND_TXT = 'Command: '
+COMMAND_TXT = 'Command (write it in the next line(s)).'
 DESCRIPTION_TXT = 'Description: '
 TAGS_TXT = 'Tags (each tag on a new line, starting from next line):\n'
 
 
 def AddCommandFromFile(commandId, fileName):
     inputFile = open(fileName)
-
-    command = (inputFile.readline().rstrip())[len(COMMAND_TXT) - 1:].lstrip()
-    description = (inputFile.readline().rstrip())[len(DESCRIPTION_TXT) - 1:].lstrip()
+    regexp_s = fr'{re.escape(COMMAND_TXT)}\n([\s\S]*?)\n{re.escape(DESCRIPTION_TXT)}(.*?)\n{re.escape(TAGS_TXT)}([\s\S]+)'
+    regexp = re.compile(regexp_s, re.MULTILINE)
+    s = str(inputFile.read())
+    command = regexp.search(s).group(1)
+    description = regexp.search(s).group(2)
+    tags = [s.rstrip().lstrip() for s in regexp.search(s).group(3).split('\n')]
+    tags = [s for s in tags if s != '']
     if len(command) == 0:
         ColorPrint('The command must contain at least 1 character.', 'red')
         inputFile.close()
@@ -161,17 +169,15 @@ def AddCommandFromFile(commandId, fileName):
         inputFile.close()
         return -1
     inputFile.readline()
-    tags = []
-    for line in inputFile:
-        tag = line.rstrip().lstrip()
-        if len(tag) > 0:
-            tags.append(tag)
     inputFile.close()
 
     if not tags:
         ColorPrint('At least one tag must be specified.', 'red')
         return -1
 
+    # print(f'command = "{command}"')
+    # print(f'description = "{description}"')
+    # print(f'tags = {tags}')
     commandId = DatabaseAddCommand(commandId, command, description)
     for tag in tags:
         DatabaseAddTag(tag, commandId)
@@ -183,7 +189,7 @@ def WriteCommandToFile(commandId, fileName):  # Non controllo l'esistenza di com
     outputFile = open(fileName, 'w+')
     (command, description) = db.execute('SELECT command, description FROM Commands WHERE rowid=?',
                                         (commandId,)).fetchone()
-    outputFile.write(COMMAND_TXT + command + '\n')
+    outputFile.write(COMMAND_TXT + '\n' + command + '\n')
     outputFile.write(DESCRIPTION_TXT + description + '\n')
     outputFile.write(TAGS_TXT)
     allTags = db.execute('SELECT tag FROM Tags WHERE commandId=?', (commandId,)).fetchall()
@@ -355,8 +361,9 @@ def Show():
 
 def Search(commandTag):
     commandIdList = list(set(db.execute("SELECT commandId FROM Tags WHERE tag LIKE ?", (commandTag + '%',)).fetchall()))
-
+    print('--------------------------------bashelp results---------------------------------')
     for (commandId,) in commandIdList:
+        print('')
         command = PrintCommandFromDatabase(commandId, ShowTags=True)
         if len(commandIdList) == 1:
             pyperclip.copy(command)
@@ -388,6 +395,7 @@ def Search(commandTag):
 # Usare distutils per installare
 # Usare bashelp search per cercare, impostando l'autocompletamento
 # La libreria click sembra fare questo e molto di più!
+
 
 if __name__ == '__main__':
     if not os.path.exists(USER_DATA_FOLDER):
