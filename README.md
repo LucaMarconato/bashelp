@@ -17,7 +17,7 @@ New features brought by this fork:
 
 
 Screenshot showing the prompt for choosing among different matching results:
-![screenshot of the multiple choices prompt](multiple_choices.psng) 
+![screenshot of the multiple choices prompt](multiple_choices.png) 
 
 
 Installation
