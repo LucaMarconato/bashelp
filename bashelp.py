@@ -367,6 +367,7 @@ def Search(commandTag):
         command = PrintCommandFromDatabase(commandId, ShowTags=True)
         if len(commandIdList) == 1:
             pyperclip.copy(command)
+            print('command copied into the clipboard')
     if len(commandIdList) > 1:
         selectedCommandId = click.prompt('Choose one id', type=int)
         found = False
@@ -374,6 +375,7 @@ def Search(commandTag):
             command, _ = GetCommandFromDatabase(commandId)
             if selectedCommandId == commandId:
                 pyperclip.copy(command)
+                print('command copied into the clipboard')
                 if found:
                     ColorPrint('Found more than one command matching the id', 'red')
                 found = True
