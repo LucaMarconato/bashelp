@@ -12,6 +12,7 @@ New features brought by this fork:
 - improved way in which commands are presented and selected by the user upon search.
 
 [30 seconds demo (video)](https://www.youtube.com/watch?v=CbDKKno5-p8)
+
 [![30 seconds video showing a demo of bashelp](https://img.youtube.com/vi/CbDKKno5-p8/0.jpg)](https://www.youtube.com/watch?v=CbDKKno5-p8)
 
 
