@@ -359,8 +359,15 @@ def Show():
         ColorPrint("There aren't commands saved. To add a command use " + PROGRAM_NAME + " --add", 'red')
 
 
-def Search(commandTag):
-    commandIdList = list(set(db.execute("SELECT commandId FROM Tags WHERE tag LIKE ?", (commandTag + '%',)).fetchall()))
+def Search(commandTags):
+    listOfCommandIdLists = []
+    i = 0
+    for tag in commandTags:
+        commandIdList = list(set(db.execute("SELECT commandId FROM Tags WHERE tag LIKE ?", (commandTags[i] + '%',)).fetchall()))
+        listOfCommandIdLists.append(commandIdList)
+        i += 1
+    from functools import reduce
+    commandIdList = reduce(set.intersection, [set(l_) for l_ in listOfCommandIdLists])
     print('--------------------------------bashelp results---------------------------------')
     for (commandId,) in commandIdList:
         print('')
@@ -369,7 +376,11 @@ def Search(commandTag):
             pyperclip.copy(command)
             print('command copied into the clipboard')
     if len(commandIdList) > 1:
-        selectedCommandId = click.prompt('Choose one id', type=int)
+        try:
+            selectedCommandId = click.prompt('Choose one id', type=int)
+        except click.exceptions.Abort:
+            return
+
         found = False
         for (commandId,) in commandIdList:
             command, _ = GetCommandFromDatabase(commandId)
@@ -425,8 +436,8 @@ if __name__ == '__main__':
     group.add_argument('--show', '-s', action='store_true', default=False,
                        help='show all commands saved, with descriptions and tags')
 
-    group.add_argument('tag', metavar='TAG', action='store', nargs='?', default='',
-                       help='tag to be searched')
+    group.add_argument('tags', metavar='TAGS', action='store', nargs='*', default='',
+                       help='tag(s) to be searched')
 
     group.add_argument('--version', '-v', action='version', version=PROGRAM_NAME + ' ' + PROGRAM_VERSION)
 
@@ -450,8 +461,8 @@ if __name__ == '__main__':
         dbConnection.commit()
     elif args.show:
         Show()
-    elif args.tag:
-        Search(args.tag)
+    elif args.tags:
+        Search(args.tags)
     elif args.debugClean:
         Uninstall()
     dbConnection.close()
